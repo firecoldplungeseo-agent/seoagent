@@ -3,6 +3,7 @@ import 'dotenv/config';
 import { Command } from 'commander';
 import { runAudit } from './modes/audit.js';
 import { runKeywordResearch, type Cluster } from './modes/keywords.js';
+import { runOptimize, type Cluster as OptCluster } from './modes/optimize.js';
 
 const program = new Command();
 
@@ -63,10 +64,16 @@ program
 
 program
   .command('optimize <url>')
-  .description('[Phase 3] Generate optimized title/meta/H1/FAQ + push as Shopify draft')
-  .action(async (url: string) => {
-    console.log(`[stub] optimize ${url} — Phase 3 not yet implemented`);
-    process.exit(1);
+  .description('Generate optimized title/meta/H1/FAQ for a page — output as draft markdown')
+  .option('-c, --cluster <name>', 'commercial | beauty | residential', 'commercial')
+  .option('-o, --out <dir>', 'output directory', './optimizations')
+  .action(async (url: string, opts) => {
+    await runOptimize({
+      url,
+      cluster: opts.cluster as OptCluster,
+      outDir: opts.out,
+      repoRoot: process.cwd(),
+    });
   });
 
 program
