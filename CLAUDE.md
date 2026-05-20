@@ -9,7 +9,7 @@ SEO agent for Plunge Zero's three customer-facing domains. Built on a fork of [A
 ### firecoldplunge.com — LIMITED scope
 Only these page types are in SEO scope:
 - Homepage
-- Product page: **Fire Cold Plunge All-in-One Residential** (URL TBD — confirm with user)
+- Product page: **Fire Cold Plunge All-in-One Residential** (`/products/the-fire-cold-plunge-tub`)
 - Product page: **Fire Cold Plunge All-in-One Commercial** (`/products/fire-cold-plunge-all-in-one-commercial`, $6,995)
 - Blog content
 
@@ -72,7 +72,6 @@ plungecenter, dfycoldplunge, doneforyouplunge, getcoldplunge, thefirecoldplunge,
 
 ## Open TODOs
 
-- Confirm URL for firecoldplunge.com **Residential** product page
 - Add `keywords/seeds/residential.txt` consumer cluster (~25 keywords like "cold plunge tub", "home cold plunge", "ice bath tub for home")
 - Investigate plungezero.com rendering architecture — is it Shopify? What's blocking crawl?
 - Build Phase 3 content optimizer
