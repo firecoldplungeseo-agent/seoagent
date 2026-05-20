@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+.DS_Store
+
+# Generated reports — keep structure, ignore contents during dev
+reports/*.json
+reports/*.md
+!reports/.gitkeep
+
+# Local state for idempotency
+state/
