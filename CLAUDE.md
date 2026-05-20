@@ -2,17 +2,27 @@
 
 ## Context
 
-SEO agent for the Plunge Zero portfolio. Built on a fork of [AgriciDaniel/claude-seo](https://github.com/AgriciDaniel/claude-seo) (skills + agents in `.claude/`) plus a Node.js/TS CLI in `src/`.
+SEO agent for Plunge Zero's three customer-facing domains. Built on a fork of [AgriciDaniel/claude-seo](https://github.com/AgriciDaniel/claude-seo) (skills + agents in `.claude/`) plus a Node.js/TS CLI in `src/`.
 
-## v1 scope — 3 priority domains
+## Scope (locked 2026-05-20 after two clarification rounds)
 
-| Domain | Platform | Audience | Keyword cluster |
-|---|---|---|---|
-| firecoldplunge.com | Shopify | Consumer + B2B | Commercial cold plunge |
-| plungezero.com | Shopify | B2B (dealers, gyms, wellness centers) | Commercial cold plunge |
-| faceplungecompany.com | Shopify | Beauty / skincare consumers | Ice facial / cryo facial |
+### firecoldplunge.com — LIMITED scope
+Only these page types are in SEO scope:
+- Homepage
+- Product page: **Fire Cold Plunge All-in-One Residential** (URL TBD — confirm with user)
+- Product page: **Fire Cold Plunge All-in-One Commercial** (`/products/fire-cold-plunge-all-in-one-commercial`, $6,995)
+- Blog content
 
-Other portfolio domains (plungecenter, dfycoldplunge, doneforyouplunge, getcoldplunge, thefirecoldplunge, saunaheatersupply) are Phase 5 cannibalization-analysis targets only — not v1 optimization targets.
+**Out of scope on firecoldplunge.com:** all other product pages (e.g., leaf-skimmer, outdoor-plunge-cover, child-safety-lock, surebright-warranty, white-label-only NOINDEX'd pages, accessories, etc.). Do not optimize, do not flag in audits as priority.
+
+### plungezero.com — FULL scope
+All pages in SEO scope. **Known architectural problem:** site renders client-side without sitemap; bots see no content. This is the top priority blocker — SEO work here has zero leverage until the site is crawlable. Investigate and recommend a fix path (SSR/static prerender/Shopify theme audit).
+
+### faceplungecompany.com — FULL scope
+All pages in SEO scope. Beauty / ice-facial keyword cluster (`keywords/seeds/beauty.txt`) is active.
+
+### Other domains — out of scope entirely
+plungecenter, dfycoldplunge, doneforyouplunge, getcoldplunge, thefirecoldplunge, saunaheatersupply. Don't touch.
 
 ## Brand voice (Nick's voice, signed "Nick")
 
@@ -20,21 +30,23 @@ Other portfolio domains (plungecenter, dfycoldplunge, doneforyouplunge, getcoldp
 - No emojis, no markdown formatting, no filler openers
 - Phone (361)-209-7324 mentioned where natural
 - Never quote pricing in email/copy — redirect to phone for B2B
-- 1–3 sentences for outbound reply tone (applies to FAQ answers, support content)
+- 1–3 sentences for reply tone (applies to FAQ answers, support content)
 
 ## Hard rules
 
 1. **Drafts only — never auto-publish.** Any Shopify writes go to draft/unpublished. User reviews before publish.
 2. **State is explicit.** No hidden runtime state. Persist to local JSON in `state/` or to Shopify/HubSpot custom properties.
 3. **Idempotent.** Re-running any mode should not duplicate work or push duplicate drafts.
-4. **GSC OAuth uses `hello@firecoldplunge.com`** — the account that owns Search Console for all 3 v1 domains.
+4. **GSC OAuth uses `hello@firecoldplunge.com`** — owns Search Console for all three in-scope domains.
+5. **Respect intentional NOINDEX on firecoldplunge.com.** White-label-gated product pages are out of scope.
+6. **For firecoldplunge.com, filter the audit/optimizer to in-scope URLs only.** Don't run optimization on out-of-scope product pages even if the audit catches them.
 
 ## Modes
 
-- `seo-agent audit <domain>` — Phase 1, on-demand full audit
-- `seo-agent optimize <url>` — Phase 3, content optimizer (writes Shopify draft)
-- `seo-agent weekly` — Phase 4, scheduled cron (rank delta + competitor scan + digest to scott@plungezero.com)
-- `seo-agent cannibalize` — Phase 5, portfolio-wide overlap analysis
+- `seo-agent audit <domain>` — Phase 1, on-demand full audit ✅ working
+- `seo-agent keywords research` — Phase 2, keyword + competitor research ✅ working
+- `seo-agent optimize <url>` — Phase 3, content optimizer (writes Shopify draft) ⏸ not built
+- `seo-agent weekly` — Phase 4, scheduled cron + digest to scott@plungezero.com ⏸ not built
 
 ## Stack
 
@@ -43,10 +55,24 @@ Other portfolio domains (plungecenter, dfycoldplunge, doneforyouplunge, getcoldp
 - DataForSEO (rank + backlinks + on-page Lighthouse) — ~$50/mo budget cap
 - Google PageSpeed Insights API (free tier)
 - Google Search Console API (OAuth via hello@firecoldplunge.com)
-- Shopify MCP (Claude Desktop) — draft writes
+- Shopify MCP (Claude Desktop) — draft writes (3 stores, one per domain)
 - Gmail MCP — digest delivery
 
-## Competitor seed
+## Keyword clusters
 
-Commercial: business.plunge.com, coldtub.com, chillygoattubs.com, icebarrel.com.
-Beauty/face plunge: TBD from user.
+- **Commercial** (`keywords/seeds/commercial.txt`) — for firecoldplunge.com Commercial product page. 35 seeds. Active.
+- **Residential / Consumer** — for firecoldplunge.com Residential product + homepage. TBD — needs to be added.
+- **Beauty** (`keywords/seeds/beauty.txt`) — for faceplungecompany.com. 25 seeds. Active.
+- **plungezero.com cluster** — TBD once architectural fix path is known.
+
+## Competitor seed (auto-detected from SERPs 2026-05-20)
+
+- **Commercial:** plunge.com (dominant, 22/35), thecoldplungestore.com, coldplungeguys.com, polarmonkeys.com, chillygoattubs.com, coldtub.com, business.plunge.com.
+- **Beauty:** Healthline (17), Instagram (13), Amazon (12), Vogue (10). Direct product rivals: contourcube.com, facedunk.com, skingymco.com.
+
+## Open TODOs
+
+- Confirm URL for firecoldplunge.com **Residential** product page
+- Add `keywords/seeds/residential.txt` consumer cluster (~25 keywords like "cold plunge tub", "home cold plunge", "ice bath tub for home")
+- Investigate plungezero.com rendering architecture — is it Shopify? What's blocking crawl?
+- Build Phase 3 content optimizer
