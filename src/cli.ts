@@ -2,6 +2,7 @@
 import 'dotenv/config';
 import { Command } from 'commander';
 import { runAudit } from './modes/audit.js';
+import { runKeywordResearch, type Cluster } from './modes/keywords.js';
 
 const program = new Command();
 
@@ -31,6 +32,33 @@ program
       lighthouseTopN: opts.lighthouseTop,
       crawlConcurrency: opts.concurrency,
     });
+  });
+
+program
+  .command('keywords <action>')
+  .description('Keyword research: action = research | balance')
+  .option('-c, --cluster <name>', 'commercial | beauty', 'commercial')
+  .option('-l, --limit <n>', 'cap keywords processed', (v) => parseInt(v, 10))
+  .option('--skip-serp', 'skip SERP fetches (cheaper, no competitor data)', false)
+  .option('-o, --out <dir>', 'output directory under keywords/', './keywords')
+  .action(async (action: string, opts) => {
+    if (action === 'research') {
+      await runKeywordResearch({
+        cluster: opts.cluster as Cluster,
+        limit: opts.limit,
+        skipSerp: opts.skipSerp,
+        outDir: opts.out,
+        repoRoot: process.cwd(),
+      });
+    } else if (action === 'balance') {
+      const { DataForSeoClient } = await import('./lib/dataforseo.js');
+      const c = DataForSeoClient.fromEnv();
+      const b = await c.balance();
+      console.log(`DataForSEO balance: $${b.balance.toFixed(4)} (login: ${b.login})`);
+    } else {
+      console.error(`Unknown action: ${action}. Use: research | balance`);
+      process.exit(1);
+    }
   });
 
 program
