@@ -10,5 +10,11 @@ reports/*.json
 reports/*.md
 !reports/.gitkeep
 
+# Generated keyword research output (seeds/ stays tracked — those are hand-curated)
+keywords/research/
+optimizations/*.md
+optimizations/*.json
+competitors/*-auto-*.md
+
 # Local state for idempotency
 state/
