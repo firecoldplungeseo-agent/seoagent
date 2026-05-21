@@ -4,6 +4,7 @@ import { Command } from 'commander';
 import { runAudit } from './modes/audit.js';
 import { runKeywordResearch, type Cluster } from './modes/keywords.js';
 import { runOptimize, type Cluster as OptCluster } from './modes/optimize.js';
+import { runWeekly } from './modes/weekly.js';
 
 const program = new Command();
 
@@ -78,10 +79,15 @@ program
 
 program
   .command('weekly')
-  .description('[Phase 4] Weekly cron: rank delta + competitor scan + CWV regression + digest')
-  .action(async () => {
-    console.log('[stub] weekly — Phase 4 not yet implemented');
-    process.exit(1);
+  .description('Weekly digest: rank deltas + audit deltas vs last snapshot, writes digests/weekly-<date>.md + state/snapshot-<date>.json')
+  .option('--skip-audit', 'reuse previous audit counts instead of running fresh audits', false)
+  .option('-c, --concurrency <n>', 'concurrent SERP fetches', (v) => parseInt(v, 10), 4)
+  .action(async (opts) => {
+    await runWeekly({
+      repoRoot: process.cwd(),
+      serpConcurrency: opts.concurrency,
+      skipAudit: opts.skipAudit,
+    });
   });
 
 program

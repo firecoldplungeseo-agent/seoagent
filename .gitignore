@@ -16,5 +16,5 @@ optimizations/*.md
 optimizations/*.json
 competitors/*-auto-*.md
 
-# Local state for idempotency
-state/
+# Weekly snapshots (state/) and digests must be committed so the scheduled agent
+# can diff vs last week's run. They're not secrets — just data.
