@@ -35,6 +35,7 @@ export async function runOptimize(opts: OptimizeOptions): Promise<void> {
   const result = await optimizePage({
     url,
     domain,
+    cluster,
     currentMeta: meta,
     targetKeywords,
     competitorSnippets,
