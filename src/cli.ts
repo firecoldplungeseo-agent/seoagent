@@ -81,12 +81,14 @@ program
   .command('weekly')
   .description('Weekly digest: rank deltas + audit deltas vs last snapshot, writes digests/weekly-<date>.md + state/snapshot-<date>.json')
   .option('--skip-audit', 'reuse previous audit counts instead of running fresh audits', false)
+  .option('--send', 'send digest via Gmail SMTP to DIGEST_RECIPIENTS (requires GMAIL_USER + GMAIL_APP_PASSWORD)', false)
   .option('-c, --concurrency <n>', 'concurrent SERP fetches', (v) => parseInt(v, 10), 4)
   .action(async (opts) => {
     await runWeekly({
       repoRoot: process.cwd(),
       serpConcurrency: opts.concurrency,
       skipAudit: opts.skipAudit,
+      send: opts.send,
     });
   });
 

@@ -6,6 +6,7 @@ import { DataForSeoClient, type SerpOrganicItem } from '../lib/dataforseo.js';
 import { runAudit } from './audit.js';
 import { findOurRank, computeRankDelta, type RankDelta } from '../lib/rank.js';
 import { generateDigest, type DomainAuditSummary } from '../lib/digest.js';
+import { sendDigestEmail, parseRecipients } from '../lib/email.js';
 
 type Cluster = 'commercial' | 'residential' | 'beauty';
 
@@ -21,6 +22,7 @@ export interface WeeklyOptions {
   repoRoot: string;
   serpConcurrency: number;
   skipAudit: boolean;
+  send: boolean;
 }
 
 interface RankRecord {
@@ -175,8 +177,21 @@ export async function runWeekly(opts: WeeklyOptions): Promise<void> {
   console.log(`  ${digestPath}`);
   console.log(`  ${snapshotPath}`);
   console.log(``);
-  const recipient = process.env.DIGEST_EMAIL ?? 'hello@firecoldplunge.com';
-  console.log(`Send this digest to ${recipient} (the scheduled agent handles delivery via Gmail MCP).`);
+
+  if (opts.send) {
+    const recipients = parseRecipients();
+    if (recipients.length === 0) {
+      console.warn(`[weekly] --send requested but DIGEST_RECIPIENTS env var is empty — skipping email`);
+    } else {
+      console.log(`[weekly] sending digest to ${recipients.length} recipient(s)...`);
+      await sendDigestEmail({
+        subject: `SEO Weekly Digest — ${today}`,
+        body: digest,
+        recipients,
+      });
+      console.log(`[weekly] ✓ Sent to: ${recipients.join(', ')}`);
+    }
+  }
 }
 
 async function loadSeed(cluster: Cluster, repoRoot: string): Promise<string[]> {
