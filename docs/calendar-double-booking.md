@@ -219,6 +219,47 @@ cause 4 without depending on the Calendly tentative toggle.
 - Calendars that are not writable are detected up front via `accessRole` and reported as
   BLOCKED rather than failing mid-run.
 
+### First dry run against live data (2026-07-26, 60-day window)
+
+Run by driving `planHolds()` over real API output before the `GCAL_*` token existed.
+Input: hello@ 99 events, info@ 52, nick@plungezero 5, faceplunge 9 (freeBusyReader).
+
+Result: **98 holds, ~194h of new busy time** — 93 holds onto `nick@plungezero.com`
+(191.8h) and 5 onto `hello@firecoldplunge.com` (2.3h). The asymmetry is expected: almost
+all of Nick's real load lives on `hello@`, and his PZ calendar is nearly empty.
+
+Two thirds of that volume is four recurring items:
+
+| Source | Holds | Hours |
+|---|---|---|
+| ARAURIS Founders (Tue 11:00–19:00) | 9 | 72.0 |
+| Deep Work / Deep work | 25 | 84.0 |
+| Watch kids Martina pottery class | 8 | 8.0 |
+| Everything else (24 distinct meetings) | 56 | ~30.0 |
+
+**Open decision:** whether Nick's own solo blocks (Deep Work, pottery class, ~92h) should
+block dealer bookings, or only real meetings should. Mirroring everything is maximum
+protection but leaves the PZ Calendly with few slots.
+
+#### Defect this dry run caught
+
+`creator` was being treated as participation. Nick built the weekly 1:1 series from his
+`hello@` account, which makes him the creator of **Scott's** 1:1s with Davie, Aaron and
+Elle — meetings he does not attend. The first run mirrored all of them. Fixed: organizer
+and attendee count, creator does not. That removed 39 spurious busy events.
+
+#### Gap no rule can close
+
+`1:1 — Nick & Scott (Scott runs)` has attendees
+`[scott@firecoldplunge.com, info@plungezero.com]` — **Nick is not on his own 1:1.** Some
+`1:1 — Nick & Tosha` instances are the same, listing only `[tdawnc1212@gmail.com,
+info@plungezero.com]`. No matching rule can infer attendance that no calendar field
+records, and title-matching on "Nick" would be far too fragile to trust.
+
+These need fixing at the source — add one of Nick's addresses as an attendee on the 1:1
+series. Until then they are invisible to calguard *and* to every booking tool, which is
+the same root failure in a different place.
+
 ### Currently degraded
 
 `nick@faceplungecompany.com` is `freeBusyReader`, so calguard can neither read its detail

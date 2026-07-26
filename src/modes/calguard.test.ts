@@ -65,6 +65,36 @@ test("other people's 1:1s on the shared ops calendar are not Nick's time", () =>
   assert.equal(plans.length, 0);
 });
 
+test('creating an event does not mean attending it', () => {
+  // Nick built the weekly 1:1 series from hello@, so he is the creator of Scott's 1:1s
+  // with Davie/Aaron/Elle. He does not attend them. Found by dry-running against real
+  // calendar data — an earlier revision mirrored all of these.
+  const scottsOneOnOne = ev({
+    id: 'scottdavie2',
+    summary: '1:1 — Scott & Davie',
+    organizer: { email: INFO },
+    creator: { email: HELLO },
+    attendees: [
+      { email: INFO },
+      { email: 'scott@plungezero.com' },
+      { email: 'davie@plungezero.com' },
+    ],
+  });
+  const { busy } = plan({ [HELLO]: [], [PZ]: [], [FACE]: [], [INFO]: [scottsOneOnOne] });
+  assert.equal(busy.size, 0, 'creator must not imply participation');
+
+  // The sibling event he IS in must still be picked up.
+  const his = ev({
+    id: 'nicktosha',
+    summary: '1:1 — Nick & Tosha',
+    organizer: { email: INFO },
+    creator: { email: HELLO },
+    attendees: [{ email: INFO }, { email: PZ, responseStatus: 'needsAction' }],
+  });
+  const kept = plan({ [HELLO]: [], [PZ]: [], [FACE]: [], [INFO]: [his] });
+  assert.equal(kept.busy.size, 1, 'attendee match still wins');
+});
+
 test('an attendee-less event on a shared calendar is still not Nick, but on his own it is', () => {
   const orphan = ev({ id: 'orphan', summary: 'Some ops task', organizer: { email: INFO } });
   const onShared = plan({ [HELLO]: [], [PZ]: [], [FACE]: [], [INFO]: [orphan] });

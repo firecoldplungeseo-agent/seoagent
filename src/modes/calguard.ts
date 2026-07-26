@@ -317,7 +317,11 @@ function isNicksBusyTime(ev: GcalEvent, cal: CalendarSpec): boolean {
   if (mine.some((a) => a.responseStatus === 'declined')) return false;
 
   if (mine.length > 0) return true;
-  if (isNick(ev.organizer?.email) || isNick(ev.creator?.email)) return true;
+  // Organizer counts, but creator deliberately does NOT. Nick set up the whole weekly
+  // 1:1 series from his hello@ account, which makes him the creator of Scott's 1:1s
+  // with Davie, Aaron and Elle — meetings he does not attend. Creating an event is not
+  // the same as being in it.
+  if (isNick(ev.organizer?.email)) return true;
   // No attendees at all on a calendar that is his: still his time. This is what
   // catches the Indeed interview placeholders.
   if (cal.own && attendees.length === 0) return true;
