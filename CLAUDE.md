@@ -47,6 +47,7 @@ plungecenter, dfycoldplunge, doneforyouplunge, getcoldplunge, thefirecoldplunge,
 - `seo-agent keywords research` — Phase 2, keyword + competitor research ✅ working
 - `seo-agent optimize <url>` — Phase 3, content optimizer (writes Shopify draft) ⏸ not built
 - `seo-agent weekly` — Phase 4, scheduled cron + digest to scott@plungezero.com ⏸ not built
+- `seo-agent calguard` — cross-calendar busy mirroring, stops Calendly/HubSpot double-booking Nick ✅ built, ⏸ needs `GCAL_*` OAuth token. Dry-run by default; `--apply` writes. See `docs/calendar-double-booking.md`.
 
 ## Stack
 

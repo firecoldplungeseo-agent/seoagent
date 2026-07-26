@@ -120,27 +120,63 @@ Indeed writes them onto `hello@firecoldplunge.com` as normal **opaque (busy)** e
 (verified: `transparency` unset, i.e. default busy; `attendees: []`). Once `hello@` is in
 the conflict-check list they block automatically. No Indeed integration required.
 
-## Fix — Part B (enforcement job, scoped)
+## Fix — Part B: `seo-agent calguard` (built)
 
-Part A depends on every person configuring every future tool correctly. A mirror job
-enforces it at the calendar layer, where all five tools agree.
+Part A depends on every person configuring every future tool correctly. This enforces it
+at the calendar layer, where all five tools agree.
 
-Rule: mirror **only events where Nick is organizer, creator, or attendee** — matching
+```
+seo-agent calguard                 # dry run — writes a report, touches nothing
+seo-agent calguard --apply         # create/update/reap holds
+seo-agent calguard --horizon 90    # protect further out (default 60 days)
+```
+
+Implementation: `src/modes/calguard.ts`, Calendar client in `src/lib/gcal.ts`, tests in
+`src/modes/calguard.test.ts` (`npm test`).
+
+### What counts as Nick's time
+
+Mirrors **only events where Nick is organizer, creator, or attendee** — matching
 `hello@firecoldplunge.com`, `nick@plungezero.com`, `nick@faceplungecompany.com`,
-`ncreed11@gmail.com` — onto his other calendars as opaque `Busy (auto)` holds. Never
-mirror by calendar membership: `info@plungezero.com` carries other people's 1:1s
-(Scott & Davie, Scott & Elle, Scott & Aaron) that are not Nick's time.
+`ncreed11@gmail.com` — onto his other calendars as opaque `Busy (auto)` holds.
 
-Design constraints, per `CLAUDE.md`:
-- Idempotent: holds keyed by source event ID in `extendedProperties.private`, so
-  re-running updates rather than duplicates (rule 3).
-- State in `state/` (rule 2).
-- Dry-run by default (rule 1 posture).
-- Skips `transparency: transparent`, so the Ideal Week time-blocks stay bookable.
-- Skips events Nick declined, and all-day birthdays.
-- Hold titles carry no detail — just `Busy (auto)` — so nothing leaks between brands.
-- Reaps holds whose source event was deleted or moved.
+Never mirrors by calendar membership: `info@plungezero.com` carries other people's 1:1s
+(Scott & Davie, Scott & Elle, Scott & Aaron) which are not Nick's time.
 
-Degraded until Part A step 1 lands: the job cannot read
-`nick@faceplungecompany.com` at `freeBusyReader` either — the same wall the booking
-tools hit.
+One exception, needed for the Indeed interviews: an event with **no attendees at all** on
+a calendar that is Nick's own counts as his. Those placeholders carry no attendee list, so
+an identity match alone would miss them. The same rule does not apply to
+`info@plungezero.com`, which is flagged `own: false`.
+
+### Excluded on purpose
+
+- `transparency: transparent` — keeps the Ideal Week template bookable.
+- All-day events — would otherwise blank out whole days.
+- Events Nick declined; birthdays; working-location markers.
+- The job's own holds, so runs do not feed on themselves.
+
+Note that `needsAction` invitations **do** block. That is deliberate — it closes root
+cause 4 without depending on the Calendly tentative toggle.
+
+### Safety properties
+
+- **Idempotent** (per `CLAUDE.md` rule 3): holds are keyed by source event ID in
+  `extendedProperties.private.calguardKey`, so reruns update rather than duplicate. A
+  moved source event patches its existing hold; a deleted one gets its hold reaped.
+- **Dry-run by default** (rule 1 posture) — `--apply` is required to write.
+- **State in `state/calguard.json`** (rule 2), report in `reports/calguard-<date>.md`.
+- Holds carry **no source title or detail**, just `Busy (auto)`, so nothing leaks between
+  brands. They are set `visibility: private` with reminders suppressed.
+- Calendars that are not writable are detected up front via `accessRole` and reported as
+  BLOCKED rather than failing mid-run.
+
+### Currently degraded
+
+`nick@faceplungecompany.com` is `freeBusyReader`, so calguard can neither read its detail
+nor write holds to it — the same wall the booking tools hit. It will report the calendar
+as BLOCKED until Part A step 1 lands. Everything else still works meanwhile.
+
+Also still outstanding: `GCAL_CLIENT_ID` / `GCAL_CLIENT_SECRET` / `GCAL_REFRESH_TOKEN`
+need to be issued for `hello@firecoldplunge.com` with the
+`https://www.googleapis.com/auth/calendar` scope. The `GSC_*` token will not work — its
+grant excludes Calendar.
