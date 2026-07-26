@@ -248,6 +248,22 @@ protection but leaves the PZ Calendly with few slots.
 Elle — meetings he does not attend. The first run mirrored all of them. Fixed: organizer
 and attendee count, creator does not. That removed 39 spurious busy events.
 
+#### Forward-looking verification (next 60 days)
+
+98 of Nick's busy events contain **15 overlaps**, which split into two very different
+groups:
+
+- **2 cross-calendar** — the actual double-booking problem, both caused by Calendly:
+  Jul 27 12:00 (Hicham Jorio interview on `hello@` vs Rhynan Fay dealer intro on
+  `nick@plungezero`) and Jul 29 09:00 (Deep Work on `hello@` vs Colorado Saunas dealer
+  training on `nick@plungezero`). calguard prevents exactly this class.
+- **13 same-calendar**, all within `hello@` — mostly a standing "Winston meeting" sitting
+  inside a Deep Work block, recurring weekly. These are Nick layering his own entries on
+  one calendar. calguard cannot and should not touch them; no booking tool caused them.
+
+Worth stating plainly because the raw count of 15 overstates the tool problem: only 2 are
+the failure this project addresses.
+
 #### Gap no rule can close
 
 `1:1 — Nick & Scott (Scott runs)` has attendees
