@@ -264,17 +264,37 @@ groups:
 Worth stating plainly because the raw count of 15 overstates the tool problem: only 2 are
 the failure this project addresses.
 
-#### Gap no rule can close
+#### Gap no rule could close — now fixed at the source
 
-`1:1 — Nick & Scott (Scott runs)` has attendees
-`[scott@firecoldplunge.com, info@plungezero.com]` — **Nick is not on his own 1:1.** Some
-`1:1 — Nick & Tosha` instances are the same, listing only `[tdawnc1212@gmail.com,
-info@plungezero.com]`. No matching rule can infer attendance that no calendar field
-records, and title-matching on "Nick" would be far too fragile to trust.
+`1:1 — Nick & Scott (Scott runs)` had attendees `[scott@firecoldplunge.com,
+info@plungezero.com]` — **Nick was not on his own 1:1** — and the `1:1 — Nick & Tosha`
+series was the same from Aug 6 onward. No matching rule can infer attendance that no
+calendar field records, and title-matching on "Nick" would be far too fragile to trust.
 
-These need fixing at the source — add one of Nick's addresses as an attendee on the 1:1
-series. Until then they are invisible to calguard *and* to every booking tool, which is
-the same root failure in a different place.
+Fixed on 2026-07-26 by adding `hello@firecoldplunge.com` as an attendee to both recurring
+masters on `info@plungezero.com`:
+
+| Series | Master ID |
+|---|---|
+| `1:1 — Nick & Scott (Scott runs)` | `5ovnprsoburgdjdbom97cc8qvd` |
+| `1:1 — Nick & Tosha` | `2c9qc2bum6fplso965tdqp6ub2` |
+
+Additive only — no attendee removed — and written with `notificationLevel: NONE` so Scott
+and Tosha were not re-invited. Verified across all 16 future instances, including two that
+had been individually edited and therefore might not have inherited; they did.
+
+#### Indeed events may be stale, and calguard will mirror them anyway
+
+The Indeed interview placeholders are written into `hello@firecoldplunge.com` by Indeed,
+but the authoritative schedule lives in Indeed, not Google. Nick reports that a pair the
+calendar shows as overlapping (Jul 27 12:00 Hicham Jorio vs the Rhynan Fay dealer intro)
+does not actually conflict, while both Google events remain `confirmed` at those times.
+
+The likely explanation is that a change made in Indeed did not propagate to the Google
+copy. Consequence for calguard: it will faithfully mirror a stale placeholder as real busy
+time and block slots that are genuinely free. Nothing in the matching rules can detect
+this — the event looks completely normal. Worth watching in the first `--apply` runs, and
+a reason to keep the Indeed→Google sync honest.
 
 ### Currently degraded
 
