@@ -35,6 +35,54 @@ collisions on Nick's own time, 7 of them created by an automated booking tool:**
 Six of seven ran over an event living on `hello@firecoldplunge.com`. The seventh ran over
 `nick@faceplungecompany.com`. Both are calendars no booking tool currently reads.
 
+## Calendly topology (resolved)
+
+There is **one Calendly organization, administered by `hello@firecoldplunge.com`** (display
+name "Nick Reed"). Evidence: org invitation notifications sent to that address linking to
+`calendly.com/app/admin/users`, Admin Center digest emails, and a trial-conversion email
+in Dec 2025. Members seen accepting invitations: Nick Reed (2026-03-05) and Scott Williams
+(2026-03-06).
+
+**Plan is paid, and Collective event types are therefore available.** Two independent
+signals: the Admin Center and organization-users features are Teams-tier, and
+`info@plungezero.com` runs two concurrently active event types ("Plunge Zero Dealer Intro"
+and "Onboarding New WL Portal") where Free permits only one active at a time.
+
+### Which Google account each Calendly seat writes with
+
+Calendly creates Google events using the connected account's own OAuth token, so the
+`creator` field on each event identifies the connection:
+
+| Calendly seat hosts | Connected Google account |
+|---|---|
+| Plunge Zero Dealer Intro, Onboarding New WL Portal | `info@plungezero.com` |
+| Plunge Zero Dealer Onboarding, Plunge Zero Dealer Video Call | `nick@plungezero.com` |
+| Fire Cold Plunge Commercial Meeting, FCP Meeting – White Labeling, 30 Minute Meeting, WLP Training | `hello@firecoldplunge.com` |
+
+Three seats, three different connected accounts, one org that Nick administers — so every
+change below can be made by Nick himself from the Admin Center without borrowing anyone's
+login.
+
+### Bounded by evidence, not directly readable
+
+No Calendly API exposes the "Check for conflicts" tick state, so it cannot be read from
+outside the UI. The collisions bound it anyway:
+
+- The `info@plungezero.com` seat does **not** have `hello@firecoldplunge.com` or
+  `nick@plungezero.com` ticked — it booked over both.
+- The `nick@plungezero.com` seat does **not** have `hello@firecoldplunge.com` ticked — it
+  booked over it on Jul 9 and Jul 29.
+
+### One item to eyeball in Admin Center
+
+The Jul 7 event "Rachel Roth and Scott Williams FCP Commercial Intro" was created by
+`hello@firecoldplunge.com` under event type "Fire Cold Plunge Commercial Meeting", with
+`scott@firecoldplunge.com` as an attendee, while the host notification went to
+`hello@`. That is consistent with either a shared FCP sales seat that Scott uses, or
+Scott's own seat being connected to Nick's `hello@` calendar. If it is the latter, Scott's
+bookings are writing to Nick's personal calendar — worth 30 seconds on the Users page to
+confirm which.
+
 ## Confirmed root causes
 
 ### 1. Nick is a guest, not a co-host, on the associate's Calendly
@@ -104,10 +152,11 @@ Calendly's public API cannot change calendar-sync settings or convert event type
    Nothing else can see this calendar until this lands.
 2. **Convert "Plunge Zero Dealer Intro" to a Collective event type with Nick as
    co-host** (Route 1 above). This is the fix for the reported complaint.
-3. **Calendly → Availability → Calendar settings**, for every Calendly user: add
+3. **Calendly → Availability → Calendar settings**, for all three seats
+   (`hello@firecoldplunge.com`, `nick@plungezero.com`, `info@plungezero.com`): add
    `hello@firecoldplunge.com`, `nick@plungezero.com`, and `nick@faceplungecompany.com`
-   to **"Check for conflicts."**
-   *Plan note:* Calendly free allows 1 calendar connection; Standard and above allow 6.
+   to **"Check for conflicts."** Nick can reach all three from the Admin Center.
+   *Limit:* 6 calendar connections per seat on paid plans, so three is fine.
 4. **Enable Tentative** in free/busy rules, so the 22 un-RSVP'd invites block.
 5. **HubSpot:** point Scott's meeting links at a group/round-robin meeting that includes
    Nick, or stop auto-adding him. HubSpot checks Scott's calendar only and no Calendly
