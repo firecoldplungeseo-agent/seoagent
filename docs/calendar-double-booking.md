@@ -85,6 +85,32 @@ confirm which.
 
 ## Confirmed root causes
 
+### 0. The attendee automation cannot prevent double-booking, by construction
+
+An automation (not in this repo — Zapier/Make/HubSpot/Apps Script) adds
+`nick@plungezero.com` and `scott@plungezero.com` to sales events booked on
+`info@plungezero.com`.
+
+It runs **after** the booking is confirmed. That is an ordering problem, not a tuning
+problem: by the time it fires the dealer already holds a confirmed slot, so attaching Nick
+can only record the conflict, never prevent it. Before it runs the clash does not exist on
+Nick's calendar; after it runs, it does.
+
+What it actually produces, measured across upcoming `info@` events:
+
+| RSVP state | `nick@plungezero.com` | `scott@plungezero.com` |
+|---|---|---|
+| accepted | 0 | 0 |
+| needsAction | 4 | 1 |
+| declined (OOO auto-decline) | 0 | 3 |
+
+Every dealer intro looks staffed; none is confirmed. The automation attaches names, not
+commitments. It is a notification mechanism being used as a scheduling mechanism.
+
+**Keep it only for people whose availability is not gating** — Scott is a reasonable use
+case. Remove Nick from it once he is a Calendly co-host, or it will churn against events
+Calendly already populates.
+
 ### 1. Nick is a guest, not a co-host, on the associate's Calendly
 All 13 associate-booked meetings have `organizer: info@plungezero.com` with Nick as a
 plain attendee. Calendly only checks availability for **hosts and co-hosts** — guests
