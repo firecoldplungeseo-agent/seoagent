@@ -306,6 +306,18 @@ Two thirds of that volume is four recurring items:
 block dealer bookings, or only real meetings should. Mirroring everything is maximum
 protection but leaves the PZ Calendly with few slots.
 
+> **Update 2026-07-27 15:18Z — ARAURIS declined.** All 9 instances of the ARAURIS Founders
+> series (Jul 28 → Sep 22) were declined by both `nick@faceplungecompany.com` (its
+> organizer) and `hello@firecoldplunge.com`. calguard skips declined events, so those 72h
+> leave the plan: **~194h → ~122h**, the Jul 28 collision disappears, and the
+> "mirror everything" and "all-but-ARAURIS" options now converge on the same number. The
+> series still exists on `hello@`; it is declined, not deleted, so it will return to the
+> plan if the RSVP is reversed.
+>
+> Side effect worth knowing: declined events drop out of the faceplunge view entirely, so
+> that calendar now reads as empty from `hello@`. That is the decline, not a sharing
+> change — `accessRole` is still `freeBusyReader`.
+
 #### Defect this dry run caught
 
 `creator` was being treated as participation. Nick built the weekly 1:1 series from his
