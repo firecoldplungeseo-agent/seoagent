@@ -143,7 +143,46 @@ Priority1 booking direct. No Calendly setting governs the non-Calendly ones.
 
 Yes — two native routes.
 
-### Route 1 — Collective event type (recommended)
+### Route 0 — Round Robin with priority stars (RECOMMENDED for Dealer Intro)
+
+Ownership model, per Nick: **Scott owns dealer intros; Nick is backup/secondary.** That
+makes Collective the wrong shape — it requires *all* hosts free, which would gate every
+dealer intro on the availability of someone who is usually not needed.
+
+Correct shape is a **Round Robin** event type with priority stars (Standard plan and
+above):
+
+| Host | Priority |
+|---|---|
+| `scott@plungezero.com` | high (starred) |
+| `nick@plungezero.com` | low |
+
+Calendly books the highest-priority *available* host, so Scott takes dealer intros
+whenever he is free and Nick only fills in when Scott is not.
+
+**Why this handles the current situation with no manual intervention.** Scott is out for
+two weeks. Google `OUT_OF_OFFICE` events set status to Busy and auto-decline invitations —
+and the `"Declined because I am out of office"` comments on his existing invites are
+Google's OOO auto-decline, which only fires from a real OOO event. So his free/busy
+genuinely reads busy. Round Robin will find him unavailable, route to Nick, and check
+Nick's real availability *before* offering the slot. When Scott returns it reverts by
+itself. Nothing to toggle, nothing to remember to change back.
+
+Neither host can be double-booked, because assignment happens against live free/busy at
+the moment the invitee picks a time — which is the ordering property the stapling
+automation can never have.
+
+**Prerequisite that still matters:** Nick's Calendly seat must list
+`hello@firecoldplunge.com`, `nick@plungezero.com` and `nick@faceplungecompany.com` under
+"Check for conflicts". Otherwise Round Robin routes to him while seeing only his PZ
+calendar — which is exactly the Jul 27 failure, just with an extra step.
+
+**What happens to the automation:** drop `nick@` and `scott@` from it entirely. Round
+Robin assigns one real host with a real RSVP, which is strictly better than two stapled
+attendees who are unconfirmed and OOO-declined. Keep it only if the associate herself
+needs to be attached as an attendee.
+
+### Route 1 — Collective event type
 Convert "Plunge Zero Dealer Intro" to a **Collective** event type and add Nick as a
 **co-host**. Calendly then only offers slots when all hosts are free, so it checks Nick's
 calendars before showing availability. Nick's own Calendly user ticks
