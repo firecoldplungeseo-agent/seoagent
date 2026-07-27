@@ -3,6 +3,9 @@
 Getting `seo-agent` running on a fresh machine. Budget ~20 minutes, most of it
 collecting credentials.
 
+**On a phone or tablet, skip to [Phone / tablet](#phone--tablet) — the steps below
+are the laptop path and don't apply.**
+
 ## 1. Toolchain
 
 | Need | Version | Notes |
@@ -107,6 +110,55 @@ new device, `git pull` before running `weekly`, and commit the new snapshot afte
 Generated `reports/`, `keywords/research/`, `optimizations/`, and
 `competitors/*-auto-*` are gitignored.
 
+## Phone / tablet
+
+There is no phone install. You can't run Node on iOS or Android, so the CLI
+never executes on the device — you use **Claude Code on the web** (claude.ai/code
+or the mobile app), which runs this repo in an ephemeral Linux container in the
+cloud and clones it fresh at session start. The phone is a terminal, not the
+machine.
+
+Three things differ from the laptop path:
+
+**1. Credentials go in the environment, not `.env`.** The container is wiped when
+the session ends, so a `.env` you create in a session is gone next time (and
+`.env` is gitignored, so committing it is not an option — don't). Set the keys as
+**environment variables on the environment** in the Claude Code web settings, and
+they're injected into every future session. `doctor` accepts either source and
+says which one it found.
+
+**2. Egress is restricted by the environment's network policy**, which is chosen
+when the environment is created — not something a session can change. This
+matters a lot here, because the whole job is fetching other people's websites.
+Measured from a live session on 2026-07-27:
+
+| Host | Needed for | Status |
+| --- | --- | --- |
+| firecoldplunge.com, plungezero.com, faceplungecompany.com | `audit`, `optimize` | ✗ blocked (`host_not_allowed`) |
+| api.dataforseo.com | `keywords`, `weekly` | ✗ blocked (`host_not_allowed`) |
+| api.anthropic.com | `optimize` | ✓ reachable |
+| googleapis.com (PageSpeed) | `audit` lighthouse | ✓ reachable |
+| smtp.gmail.com:587 | `weekly --send` | ✗ blocked (SMTP ports) |
+
+So on the default policy, **`audit`, `keywords`, `optimize`, and `weekly` cannot
+run from a phone session** — not a credentials problem, the hosts are refused
+before the request leaves. `npm run doctor -- --live` reports this per host, so
+run that first on a phone rather than guessing at a mode failure. To unblock,
+the environment needs a policy that allows the three customer domains plus
+`api.dataforseo.com`; SMTP stays blocked either way, so send the digest through
+the Gmail MCP or run `weekly --send` from a laptop.
+
+**3. Commit or lose it.** Reports, snapshots, and digests written in a container
+die with it. `state/snapshot-*.json` and `digests/*.md` are exactly the files
+`weekly` needs next week — push them before the session ends.
+
+What *does* work from a phone, because it runs Claude-side rather than in the
+container: the `.claude/` skills and agents, the Shopify and Gmail MCP
+connectors, GitHub (branches, commits, PRs), and reading/editing the code. Which
+makes the phone good for review-and-ship work — reading an audit someone else
+generated, approving a draft optimization, merging — and not for running the
+crawlers.
+
 ## Commands
 
 ```bash
@@ -130,3 +182,4 @@ rather `npm link` it than use `npm run dev --`.
 | `weekly` reports every keyword as "entered" | no prior snapshot in `state/` — expected on a first run, or you forgot to `git pull` |
 | Gmail SMTP `535` | using the account password instead of an App Password, or 2FA is off |
 | `optimize` fails on cluster load | `keywords/seeds/<cluster>.txt` missing — `doctor` flags this |
+| any mode fails with instant 403 / `host_not_allowed` | egress policy blocking the host, not a credential problem — `npm run doctor -- --live` names the host. Common on phone/web sessions; see [Phone / tablet](#phone--tablet) |

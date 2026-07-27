@@ -83,10 +83,23 @@ function checkToolchain(): void {
 function checkFiles(): void {
   section('Repo files');
 
+  // .env is how a laptop supplies credentials. A remote container (Claude Code
+  // on the web, phone or desktop) injects them as real environment variables
+  // instead and has no .env at all — that's fine, so only fail when neither
+  // source produced anything.
+  const ALL_CRED_VARS = ENV_GROUPS.flatMap((g) => g.vars);
+  const credsInEnv = ALL_CRED_VARS.filter((v) => process.env[v]);
+
   if (existsSync(join(ROOT, '.env'))) {
     record('ok', '.env present', '');
+  } else if (credsInEnv.length > 0) {
+    record('ok', 'no .env — credentials from environment', `${credsInEnv.length} var(s) set`);
   } else {
-    record('fail', '.env missing', 'run: cp .env.example .env, then fill it in');
+    record(
+      'fail',
+      'no credentials',
+      'laptop: cp .env.example .env and fill it in · remote container: set them as environment variables',
+    );
   }
 
   for (const seed of ['commercial', 'residential', 'beauty']) {
@@ -115,6 +128,81 @@ function checkEnv(): void {
     } else {
       record('warn', group.mode, `missing ${missing.join(', ')}${group.note ? ` (${group.note})` : ''}`);
     }
+  }
+}
+
+/**
+ * Can this machine actually reach what the modes need? Worth checking on its
+ * own: a restrictive corporate proxy or a remote container's egress policy
+ * blocks hosts regardless of whether the credentials are right, and the modes
+ * only surface that as "0 pages crawled" or a timeout.
+ */
+async function checkEgress(): Promise<void> {
+  section('Network egress');
+
+  const got = (await import('got')).default;
+
+  const hosts: Array<{ label: string; url: string; neededFor: string }> = [
+    { label: 'firecoldplunge.com', url: 'https://firecoldplunge.com', neededFor: 'audit, optimize' },
+    { label: 'plungezero.com', url: 'https://plungezero.com', neededFor: 'audit, optimize' },
+    { label: 'faceplungecompany.com', url: 'https://faceplungecompany.com', neededFor: 'audit, optimize' },
+    { label: 'api.dataforseo.com', url: 'https://api.dataforseo.com', neededFor: 'keywords, weekly' },
+    { label: 'api.anthropic.com', url: 'https://api.anthropic.com', neededFor: 'optimize' },
+    { label: 'googleapis.com (PSI)', url: 'https://www.googleapis.com', neededFor: 'audit lighthouse' },
+  ];
+
+  for (const h of hosts) {
+    try {
+      const res = await got(h.url, {
+        method: 'HEAD',
+        timeout: { request: 20_000 },
+        throwHttpErrors: false,
+        retry: { limit: 0 },
+      });
+
+      // A filtering proxy answers in place of the host, so a status code alone
+      // doesn't prove reachability. Claude Code's egress proxy stamps
+      // x-deny-reason on refusals; a bare 403/407 with no marker is ambiguous
+      // (could be the proxy, could be the host's own WAF).
+      const denyReason = res.headers['x-deny-reason'];
+      if (denyReason) {
+        record('fail', h.label, `blocked by egress policy (${denyReason}) — ${h.neededFor} will not work`);
+      } else if (res.statusCode === 403 || res.statusCode === 407) {
+        record('warn', h.label, `HTTP ${res.statusCode} — proxy refusal or host WAF; ${h.neededFor} may fail`);
+      } else {
+        record('ok', h.label, `reachable (HTTP ${res.statusCode}) — ${h.neededFor}`);
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      const proxyDenial = /CONNECT|tunnel|403|407/i.test(msg);
+      record(
+        'fail',
+        h.label,
+        proxyDenial
+          ? `blocked by egress policy — ${h.neededFor} will not work`
+          : `unreachable: ${msg} — ${h.neededFor}`,
+      );
+    }
+  }
+
+  // SMTP is a raw TCP connect, not HTTPS — proxies commonly block port 587
+  // even when every HTTPS host above is allowed.
+  const net = await import('node:net');
+  const smtpOk = await new Promise<boolean>((resolve) => {
+    const sock = net.connect({ host: 'smtp.gmail.com', port: 587 });
+    const done = (ok: boolean) => {
+      sock.destroy();
+      resolve(ok);
+    };
+    sock.setTimeout(10_000);
+    sock.once('connect', () => done(true));
+    sock.once('timeout', () => done(false));
+    sock.once('error', () => done(false));
+  });
+  if (smtpOk) {
+    record('ok', 'smtp.gmail.com:587', 'reachable — weekly --send');
+  } else {
+    record('warn', 'smtp.gmail.com:587', 'blocked — weekly --send will fail; use the Gmail MCP or a laptop');
   }
 }
 
@@ -200,8 +288,12 @@ async function main(): Promise<void> {
   checkToolchain();
   checkFiles();
   checkEnv();
-  if (LIVE) await checkLive();
-  else console.log('\n(re-run with `npm run doctor -- --live` to test the APIs)');
+  if (LIVE) {
+    await checkEgress();
+    await checkLive();
+  } else {
+    console.log('\n(re-run with `npm run doctor -- --live` to test egress + the APIs)');
+  }
 
   const fails = results.filter((r) => r.status === 'fail');
   const warns = results.filter((r) => r.status === 'warn');
