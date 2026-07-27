@@ -63,6 +63,53 @@ Three seats, three different connected accounts, one org that Nick administers �
 change below can be made by Nick himself from the Admin Center without borrowing anyone's
 login.
 
+### Correction 2026-07-27: four seats, not three
+
+Browser-verified from the Calendly Users list: **four** active users, 4 of 6 seats used.
+
+| User | Role |
+|---|---|
+| `hello@firecoldplunge.com` | Owner |
+| `nick@plungezero.com` | Admin |
+| `scott@plungezero.com` | Admin |
+| `info@plungezero.com` | User |
+
+The three-seat table above was inferred from the `creator` field on booked events, which
+only surfaces seats that actually created something in the sampled window. Scott has a
+seat but did not appear because **he books through HubSpot Meetings, not Calendly** — his
+events carry HubSpot's "Booked by" signature.
+
+Two consequences: Round Robin needs no provisioning for Scott, and he is paying for a
+Calendly seat while booking through the one channel that sits outside every fix here.
+Migrating him onto the seat he already has would bring him under the same
+conflict-checking regime.
+
+### Two operational corrections
+
+**Conflict-check calendars are per-user with no admin override.** An org owner can manage
+users, roles, billing, managed events and workflows, but cannot edit another member's
+conflict-calendar selection. Each seat must be set from its own login. In practice this is
+one login, not three: only `nick@plungezero.com` needs it, because only Nick's time is
+scattered across three calendars. Scott's seat covers his own single calendar already, and
+`info@`'s seat stops hosting dealer intros once Round Robin lands.
+
+**There is no "Tentative" free/busy toggle in the current Calendly UI.** An earlier
+revision of this doc recommended enabling one, sourced from a help-article summary that
+could not be fetched directly. A page-text search for "tentative", "free/busy", "RSVP" and
+"maybe" across Calendar settings and Advanced settings returned nothing. The conflict
+modal offers per-calendar checkboxes only.
+
+This costs nothing: calguard already treats `needsAction` as busy, which is why root
+cause 4 was deliberately closed in code rather than by configuration.
+
+**Free/busy-only sharing appears sufficient for conflict checking.** `hello@`'s seat was
+able to tick `nick@faceplungecompany.com` while that calendar is still `freeBusyReader`.
+The read/write requirement cited earlier came from community posts and likely conflated
+conflict checking with the "add to calendar" target, which genuinely does need write. Treat
+the write upgrade as desirable — calguard needs it to place holds there — but not as a
+blocker for Calendly conflict checking. Worth confirming empirically: put a busy block on
+the faceplunge calendar and check it disappears from the seat's booking page.
+
 ### Bounded by evidence, not directly readable
 
 No Calendly API exposes the "Check for conflicts" tick state, so it cannot be read from
