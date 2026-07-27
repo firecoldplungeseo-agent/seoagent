@@ -10,6 +10,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/cli.ts",
+    "doctor": "tsx src/doctor.ts",
+    "setup": "npm ci && node -e \"require('fs').existsSync('.env')||require('fs').copyFileSync('.env.example','.env')\" && (npm run doctor || true)",
     "audit": "tsx src/cli.ts audit",
     "optimize": "tsx src/cli.ts optimize",
     "weekly": "tsx src/cli.ts weekly",
