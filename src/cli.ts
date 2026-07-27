@@ -5,6 +5,7 @@ import { runAudit } from './modes/audit.js';
 import { runKeywordResearch, type Cluster } from './modes/keywords.js';
 import { runOptimize, type Cluster as OptCluster } from './modes/optimize.js';
 import { runWeekly } from './modes/weekly.js';
+import { runCalguard } from './modes/calguard.js';
 
 const program = new Command();
 
@@ -90,6 +91,31 @@ program
       skipAudit: opts.skipAudit,
       send: opts.send,
     });
+  });
+
+program
+  .command('calguard')
+  .description(
+    'Mirror Nick\'s busy time across his calendars as opaque holds, so Calendly/HubSpot ' +
+      'see a conflict whichever calendar they check. Dry run unless --apply.',
+  )
+  .option('--apply', 'actually write holds (default is a dry-run report)', false)
+  .option('--horizon <days>', 'days forward to protect', (v) => parseInt(v, 10), 60)
+  .option('--lookback <days>', 'days back to consider', (v) => parseInt(v, 10), 1)
+  .action(async (opts) => {
+    try {
+      await runCalguard({
+        repoRoot: process.cwd(),
+        apply: opts.apply,
+        horizonDays: opts.horizon,
+        lookbackDays: opts.lookback,
+      });
+    } catch (e) {
+      // Setup failures here are almost always missing OAuth config; a stack trace
+      // buries the one line that says what to do about it.
+      console.error(`[calguard] ${(e as Error).message}`);
+      process.exit(1);
+    }
   });
 
 program

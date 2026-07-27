@@ -13,7 +13,9 @@
     "audit": "tsx src/cli.ts audit",
     "optimize": "tsx src/cli.ts optimize",
     "weekly": "tsx src/cli.ts weekly",
+    "calguard": "tsx src/cli.ts calguard",
     "lint": "eslint src --ext .ts",
+    "test": "tsx --test src/**/*.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
