@@ -37,9 +37,10 @@ plungecenter, dfycoldplunge, doneforyouplunge, getcoldplunge, thefirecoldplunge,
 1. **Drafts only — never auto-publish.** Any Shopify writes go to draft/unpublished. User reviews before publish.
 2. **State is explicit.** No hidden runtime state. Persist to local JSON in `state/` or to Shopify/HubSpot custom properties.
 3. **Idempotent.** Re-running any mode should not duplicate work or push duplicate drafts.
-4. **GSC OAuth uses `hello@firecoldplunge.com`** — owns Search Console for all three in-scope domains.
-5. **Respect intentional NOINDEX on firecoldplunge.com.** White-label-gated product pages are out of scope.
-6. **For firecoldplunge.com, filter the audit/optimizer to in-scope URLs only.** Don't run optimization on out-of-scope product pages even if the audit catches them.
+4. **Shopify access is by Admin API token, never the MCP connector.** If a Shopify token is missing or the host can't reach `*.myshopify.com`, say so and stop — do not fall back to the connector.
+5. **GSC OAuth uses `hello@firecoldplunge.com`** — owns Search Console for all three in-scope domains.
+6. **Respect intentional NOINDEX on firecoldplunge.com.** White-label-gated product pages are out of scope.
+7. **For firecoldplunge.com, filter the audit/optimizer to in-scope URLs only.** Don't run optimization on out-of-scope product pages even if the audit catches them.
 
 ## Modes
 
@@ -55,7 +56,7 @@ plungecenter, dfycoldplunge, doneforyouplunge, getcoldplunge, thefirecoldplunge,
 - DataForSEO (rank + backlinks + on-page Lighthouse) — ~$50/mo budget cap
 - Google PageSpeed Insights API (free tier)
 - Google Search Console API (OAuth via hello@firecoldplunge.com)
-- Shopify MCP (Claude Desktop) — draft writes (3 stores, one per domain)
+- Shopify Admin API via access token per store (3 stores, one per domain) — draft writes. Use the API keys, not the Claude Desktop MCP connector. Tokens live in `plungezero-automations/.env` on srv1208244.
 - Gmail MCP — digest delivery
 
 ## Keyword clusters
