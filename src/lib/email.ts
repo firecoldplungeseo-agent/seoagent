@@ -4,6 +4,7 @@ export interface SendDigestOptions {
   subject: string;
   body: string;
   recipients: string[];
+  fromName?: string;
 }
 
 export async function sendDigestEmail(opts: SendDigestOptions): Promise<void> {
@@ -26,7 +27,7 @@ export async function sendDigestEmail(opts: SendDigestOptions): Promise<void> {
   });
 
   await transporter.sendMail({
-    from: `"Plunge Zero SEO" <${user}>`,
+    from: `"${opts.fromName ?? 'Plunge Zero SEO'}" <${user}>`,
     to: opts.recipients.join(', '),
     subject: opts.subject,
     text: opts.body,

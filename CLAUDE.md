@@ -48,6 +48,10 @@ plungecenter, dfycoldplunge, doneforyouplunge, getcoldplunge, thefirecoldplunge,
 - `seo-agent optimize <url>` — Phase 3, content optimizer (writes Shopify draft) ⏸ not built
 - `seo-agent weekly` — Phase 4, scheduled cron + digest to scott@plungezero.com ⏸ not built
 
+## Side project: Tesla hunt (not SEO)
+
+- `seo-agent car-hunt <listings.json>` — filters/scores Tesla listings (2019+, clean title, hail/cosmetic, ~$10k all-in incl. $1,500 delivery) and builds an email to nickcreed11@gmail.com. Code in `src/car-hunt/`, run instructions in `car-hunt/AGENT.md`. Runs on a schedule; unrelated to the SEO scope rules above.
+
 ## Stack
 
 - Node.js / TypeScript, ESM

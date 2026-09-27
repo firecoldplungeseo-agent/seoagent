@@ -5,6 +5,7 @@ import { runAudit } from './modes/audit.js';
 import { runKeywordResearch, type Cluster } from './modes/keywords.js';
 import { runOptimize, type Cluster as OptCluster } from './modes/optimize.js';
 import { runWeekly } from './modes/weekly.js';
+import { runCarHunt } from './modes/car-hunt.js';
 
 const program = new Command();
 
@@ -90,6 +91,17 @@ program
       skipAudit: opts.skipAudit,
       send: opts.send,
     });
+  });
+
+program
+  .command('car-hunt <listings>')
+  .description('Filter + score Tesla listings (JSON array), estimate all-in cost, build the email for anything new')
+  .option('--seen <file>', 'refs already emailed, one per line — these are skipped')
+  .option('-o, --out <file>', 'write {send, to, subject, body, refs} JSON here')
+  .option('--send', 'send via Gmail SMTP (requires GMAIL_USER + GMAIL_APP_PASSWORD)', false)
+  .option('--skip-vin', 'skip NHTSA VIN decode', false)
+  .action(async (listings: string, opts) => {
+    await runCarHunt({ input: listings, seen: opts.seen, out: opts.out, send: opts.send, skipVin: opts.skipVin });
   });
 
 program
