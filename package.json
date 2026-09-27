@@ -13,6 +13,7 @@
     "audit": "tsx src/cli.ts audit",
     "optimize": "tsx src/cli.ts optimize",
     "weekly": "tsx src/cli.ts weekly",
+    "car-hunt": "tsx src/cli.ts car-hunt",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit"
   },
